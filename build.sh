@@ -28,9 +28,9 @@ while [ -n "$1" ] ; do
     esac
 done
 echo "Build application $APPLICATION for paltform $PLATFORM"
-if [ "$PLATFORM"="linux" ];then
+if [ $PLATFORM = "linux" ];then
     APPLICATION=$APPLICATION"."$PLATFORM
-elif [ "$PLATFORM"="darwine" ];then
+elif [ $PLATFORM = "darwin" ];then
     APPLICATION=$APPLICATION".mac"
 fi
 echo "Build to application $APPLICATION"
