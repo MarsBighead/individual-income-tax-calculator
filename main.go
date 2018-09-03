@@ -5,22 +5,78 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
 func main() {
+	var sig bool
+	var n int
+	var ss *string
+	for !sig {
+		generate(&n)
+		if n >= 5 {
+			break
+		}
+		fmt.Println(`
+Start a new compute with pressing Enter key or exit with q.
+`)
+		fmt.Scanln(ss)
+		if ss == nil {
+			//fmt.Println(ss)
+			continue
+		} else {
+			if strings.ToLower(*ss) == "q" || strings.ToLower(*ss) == "exit" {
+				sig = true
+				fmt.Println(`System is exiting now...
+`)
+			} else {
+				fmt.Println(`System is exiting in 10 seconds...
+`)
+				select {
+				case <-time.After(10 * time.Second):
+					sig = true
+				}
+			}
+		}
+	}
+	fmt.Println(`Exit.
+`)
+}
+
+func generate(n *int) {
 	var income float64
 	var flag int
-	for {
-		fmt.Printf(`China Individual Income Tax Version 2011
-Please enter income amount: `)
-		fmt.Scanln(&income)
+	var s string
+	var i int
+	for i = 0; i < 3; i++ {
+		fmt.Printf(`
+China Individual Income Tax Version 2011
+Please enter income amount (¥ / m):`)
+
+		fmt.Scanln(&s)
+		if regexp.MustCompile(`^[1-9]\d*(\.\d+)?$`).MatchString(strings.ToLower(s)) {
+			v, err := strconv.ParseFloat(s, 32)
+			if err != nil {
+				log.Println(err)
+			}
+			income = v
+		} else {
+			fmt.Printf(`
+Error format with input: %s.
+`, s)
+		}
+
 		if income > 0.0 {
 			break
 		}
 	}
-	var s string
+	*n = *n + i
+	if i == 3 {
+		return
+	}
+	s = ""
 	for {
 		fmt.Printf(`After-tax income(Y/N, default: yes): `)
 		fmt.Scanln(&s)
@@ -34,7 +90,8 @@ Please enter income amount: `)
 		} else if regexp.MustCompile(`no|n|false|f`).MatchString(strings.ToLower(s)) {
 			break
 		} else {
-			fmt.Println(`Error input!!!
+			fmt.Println(`
+Error input!!!
 After-tax income(Y/N, default: yes): `)
 		}
 	}
@@ -73,12 +130,16 @@ Tax: %f
 China Individual Tax Version 2018
 Tax reduction amount: %f
 `, r.Tax2011.Tax-r.Tax2018.Tax)
-	r.save()
-	time.Sleep(10 * time.Second)
+	filename := "export.txt"
+	r.save(filename)
+	fmt.Printf(`
+Export result to file %s successful.
+`, filename)
+	return
 }
 
-func (r *report) save() {
-	f, err := os.Create("export.txt")
+func (r *report) save(filename string) {
+	f, err := os.Create(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +166,6 @@ Tax reduction amount: %f
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf(`Export result to file export.txt successful.`)
 }
 
 type report struct {
