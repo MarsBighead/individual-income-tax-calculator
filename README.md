@@ -1,4 +1,4 @@
-# iit-calculator
+# Individual Income Tax Calculator
 
 China Individual Income Tax Calculator, Version 2011 to 2018.
 
